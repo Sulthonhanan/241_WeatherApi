@@ -1,125 +1,264 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deteksi Lokasi Otomatis</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f9;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        h1 {
-            color: #007bff;
-        }
-        .container {
-            background: #fff;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            width: 380px;
-        }
-        .info {
-            margin-bottom: 15px;
-        }
-        label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 4px;
-        }
-        input {
-            width: 100%;
-            padding: 7px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            background: #f9f9f9;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 100%;
-            font-weight: bold;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Informasi Cuaca & Lokasi</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #89f7fe, #66a6ff);
+      margin: 0;
+      padding: 40px 20px;
+      color: #333;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 2em;
+      color: #fff;
+      margin-bottom: 25px;
+      letter-spacing: 1px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .card {
+      background: #ffffffcc;
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+      padding: 25px;
+      width: 90%;
+      max-width: 500px;
+      text-align: left;
+    }
+
+    .card h3 {
+      color: #005b96;
+      border-bottom: 2px solid #66a6ff;
+      padding-bottom: 5px;
+      margin-bottom: 15px;
+    }
+
+    .weather-info {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .weather-info img {
+      width: 80px;
+      height: 80px;
+    }
+
+    p {
+      margin: 5px 0;
+      line-height: 1.6;
+    }
+
+    footer {
+      margin-top: 40px;
+      font-size: 0.9em;
+      color: #fff;
+      opacity: 0.8;
+    }
+  </style>
 </head>
 <body>
-    <h1>Deteksi Lokasi Otomatis</h1>
-    <div class="container">
-        <div class="info">
-            <label>Negara:</label>
-            <input type="text" id="country" readonly>
-        </div>
-        <div class="info">
-            <label>Provinsi:</label>
-            <input type="text" id="state" readonly>
-        </div>
-        <div class="info">
-            <label>Kabupaten/Kota:</label>
-            <input type="text" id="city" readonly>
-        </div>
-        <div class="info">
-            <label>Kecamatan:</label>
-            <input type="text" id="district" readonly>
-        </div>
-        <div class="info">
-            <label>Suhu (°C):</label>
-            <input type="text" id="temperature" readonly>
-        </div>
-        <div class="info">
-            <label>Longitude:</label>
-            <input type="text" id="longitude" readonly>
-        </div>
-        <div class="info">
-            <label>Latitude:</label>
-            <input type="text" id="latitude" readonly>
-        </div>
-        <button onclick="getLocation()">Dapatkan Lokasi Saya</button>
-    </div>
+  <h2>🌤️ Informasi Cuaca & Lokasi Saat Ini</h2>
 
-    <script>
-        async function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(async position => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    document.getElementById('latitude').value = lat;
-                    document.getElementById('longitude').value = lon;
+  <div class="container">
+    <div id="lokasi" class="card"></div>
+    <div id="tampilan" class="card"></div>
+  </div>
 
-                    // Ambil data lokasi dari Nominatim (OpenStreetMap)
-                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
-                    const data = await response.json();
+  <footer>Data cuaca oleh <b>WeatherAPI.com</b></footer>
 
-                    const address = data.address;
-                    document.getElementById('country').value = address.country || "-";
-                    document.getElementById('state').value = address.state || "-";
-                    document.getElementById('city').value = address.city || address.town || address.county || "-";
-                    document.getElementById('district').value = address.suburb || address.village || address.neighbourhood || "-";
+  <script>
+    const urlapi = "https://api.weatherapi.com/v1/current.json?key=2299d2b7e3ab4a8da9921340250710&q=London&aqi=no";
 
-                    // Ambil data suhu dari API Open-Meteo
-                    const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
-                    const weatherData = await weatherResponse.json();
-                    document.getElementById('temperature').value = weatherData.current_weather.temperature || "-";
+    $.ajax({
+      url: urlapi,
+      method: "GET",
+      success: function (data) {
+        console.log(data);
 
-                }, error => {
-                    alert("Tidak dapat mengakses lokasi. Harap aktifkan GPS atau izinkan akses lokasi.");
-                });
-            } else {
-                alert("Browser Anda tidak mendukung geolokasi.");
-            }
-        }
-    </script>
+        // Lokasi
+        const { name, country, region, tz_id, lat, lon, localtime } = data.location;
+
+        // Cuaca
+        const { temp_c, condition, humidity, wind_kph, wind_dir, pressure_mb, vis_km } = data.current;
+
+        $("#lokasi").html(`
+          <h3>📍 Lokasi</h3>
+          <p><b>Kota:</b> ${name}</p>
+          <p><b>Wilayah:</b> ${region}</p>
+          <p><b>Negara:</b> ${country}</p>
+          <p><b>Zona Waktu:</b> ${tz_id}</p>
+          <p><b>Latitude:</b> ${lat}</p>
+          <p><b>Longitude:</b> ${lon}</p>
+          <p><b>Waktu Lokal:</b> ${localtime}</p>
+        `);
+
+        $("#tampilan").html(`
+          <h3>🌡️ Kondisi Cuaca</h3>
+          <div class="weather-info">
+            <img src="${condition.icon}" alt="Ikon Cuaca">
+            <div>
+              <p><b>Suhu:</b> ${temp_c}°C</p>
+              <p><b>Kondisi:</b> ${condition.text}</p>
+              <p><b>Kelembapan:</b> ${humidity}%</p>
+              <p><b>Angin:</b> ${wind_kph} km/jam (${wind_dir})</p>
+              <p><b>Tekanan Udara:</b> ${pressure_mb} mb</p>
+              <p><b>Visibilitas:</b> ${vis_km} km</p>
+            </div>
+          </div>
+        `);
+      },
+      error: function (error) {
+        console.error(error);
+        $("#tampilan").html("<p style='color:red;'>⚠️ Gagal mengambil data cuaca.</p>");
+      },
+    });
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Informasi Cuaca & Lokasi</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #89f7fe, #66a6ff);
+      margin: 0;
+      padding: 40px 20px;
+      color: #333;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 2em;
+      color: #fff;
+      margin-bottom: 25px;
+      letter-spacing: 1px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .card {
+      background: #ffffffcc;
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+      padding: 25px;
+      width: 90%;
+      max-width: 500px;
+      text-align: left;
+    }
+
+    .card h3 {
+      color: #005b96;
+      border-bottom: 2px solid #66a6ff;
+      padding-bottom: 5px;
+      margin-bottom: 15px;
+    }
+
+    .weather-info {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .weather-info img {
+      width: 80px;
+      height: 80px;
+    }
+
+    p {
+      margin: 5px 0;
+      line-height: 1.6;
+    }
+
+    footer {
+      margin-top: 40px;
+      font-size: 0.9em;
+      color: #fff;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <h2>🌤️ Informasi Cuaca & Lokasi Saat Ini</h2>
+
+  <div class="container">
+    <div id="lokasi" class="card"></div>
+    <div id="tampilan" class="card"></div>
+  </div>
+
+  <footer>Data cuaca oleh <b>WeatherAPI.com</b></footer>
+
+  <script>
+    const urlapi = "https://api.weatherapi.com/v1/current.json?key=2299d2b7e3ab4a8da9921340250710&q=London&aqi=no";
+
+    $.ajax({
+      url: urlapi,
+      method: "GET",
+      success: function (data) {
+        console.log(data);
+
+        // Lokasi
+        const { name, country, region, tz_id, lat, lon, localtime } = data.location;
+
+        // Cuaca
+        const { temp_c, condition, humidity, wind_kph, wind_dir, pressure_mb, vis_km } = data.current;
+
+        $("#lokasi").html(`
+          <h3>📍 Lokasi</h3>
+          <p><b>Kecamatan:</b> ${name}</p>
+          <p><b>Wilayah:</b> ${region}</p>
+          <p><b>Negara:</b> ${country}</p>
+          <p><b>Zona Waktu:</b> ${tz_id}</p>
+          <p><b>Latitude:</b> ${lat}</p>
+          <p><b>Longitude:</b> ${lon}</p>
+          <p><b>Waktu Lokal:</b> ${localtime}</p>
+        `);
+
+        $("#tampilan").html(`
+          <h3>🌡️ Kondisi Cuaca</h3>
+          <div class="weather-info">
+            <img src="${condition.icon}" alt="Ikon Cuaca">
+            <div>
+              <p><b>Suhu:</b> ${temp_c}°C</p>
+              <p><b>Kondisi:</b> ${condition.text}</p>
+              <p><b>Kelembapan:</b> ${humidity}%</p>
+              <p><b>Angin:</b> ${wind_kph} km/jam (${wind_dir})</p>
+              <p><b>Tekanan Udara:</b> ${pressure_mb} mb</p>
+              <p><b>Visibilitas:</b> ${vis_km} km</p>
+            </div>
+          </div>
+        `);
+      },
+      error: function (error) {
+        console.error(error);
+        $("#tampilan").html("<p style='color:red;'>⚠️ Gagal mengambil data cuaca.</p>");
+      },
+    });
+  </script>
 </body>
 </html>
