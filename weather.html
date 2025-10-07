@@ -4,13 +4,65 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Informasi Cuaca & Lokasi</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  
 </head>
 <body>
   <h2>🌤️ Informasi Cuaca & Lokasi Saat Ini</h2>
 
-  <div id="lokasi"></div>
-  <div id="tampilan"></div>
+  <div class="container">
+    <div id="lokasi" class="card"></div>
+    <div id="tampilan" class="card"></div>
+  </div>
 
   <footer>Data cuaca oleh <b>WeatherAPI.com</b></footer>
+
+  <script>
+    const urlapi = "https://api.weatherapi.com/v1/current.json?key=2299d2b7e3ab4a8da9921340250710&q=London&aqi=no";
+
+    $.ajax({
+      url: urlapi,
+      method: "GET",
+      success: function (data) {
+        console.log(data);
+
+        // Lokasi
+        const { name, country, region, tz_id, lat, lon, localtime } = data.location;
+
+        // Cuaca
+        const { temp_c, condition, humidity, wind_kph, wind_dir, pressure_mb, vis_km } = data.current;
+
+        $("#lokasi").html(`
+          <h3>📍 Lokasi</h3>
+          <p><b>Kecamatan:</b> ${name}</p>
+          <p><b>Provinsi:</b> ${region}</p>
+          <p><b>Negara:</b> ${country}</p>
+          <p><b>Zona Waktu:</b> ${tz_id}</p>
+          <p><b>Latitude:</b> ${lat}</p>
+          <p><b>Longitude:</b> ${lon}</p>
+          <p><b>Waktu Lokal:</b> ${localtime}</p>
+        `);
+
+        $("#tampilan").html(`
+          <h3>🌡️ Kondisi Cuaca</h3>
+          <div class="weather-info">
+            <img src="${condition.icon}" alt="Ikon Cuaca">
+            <div>
+              <p><b>Suhu:</b> ${temp_c}°C</p>
+              <p><b>Kondisi:</b> ${condition.text}</p>
+              <p><b>Kelembapan:</b> ${humidity}%</p>
+              <p><b>Angin:</b> ${wind_kph} km/jam (${wind_dir})</p>
+              <p><b>Tekanan Udara:</b> ${pressure_mb} mb</p>
+              <p><b>Visibilitas:</b> ${vis_km} km</p>
+            </div>
+          </div>
+        `);
+      },
+      error: function (error) {
+        console.error(error);
+        $("#tampilan").html("<p style='color:red;'>⚠️ Gagal mengambil data cuaca.</p>");
+      },
+    });
+  </script>
 </body>
 </html>
