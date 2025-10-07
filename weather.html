@@ -96,7 +96,31 @@
         // Cuaca
         const { temp_c, condition, humidity, wind_kph, wind_dir, pressure_mb, vis_km } = data.current;
 
-        
+        $("#lokasi").html(`
+          <h3>📍 Lokasi</h3>
+          <p><b>Kecamatan:</b> ${name}</p>
+          <p><b>Provinsi:</b> ${region}</p>
+          <p><b>Negara:</b> ${country}</p>
+          <p><b>Zona Waktu:</b> ${tz_id}</p>
+          <p><b>Latitude:</b> ${lat}</p>
+          <p><b>Longitude:</b> ${lon}</p>
+          <p><b>Waktu Lokal:</b> ${localtime}</p>
+        `);
+
+        $("#tampilan").html(`
+          <h3>🌡️ Kondisi Cuaca</h3>
+          <div class="weather-info">
+            <img src="${condition.icon}" alt="Ikon Cuaca">
+            <div>
+              <p><b>Suhu:</b> ${temp_c}°C</p>
+              <p><b>Kondisi:</b> ${condition.text}</p>
+              <p><b>Kelembapan:</b> ${humidity}%</p>
+              <p><b>Angin:</b> ${wind_kph} km/jam (${wind_dir})</p>
+              <p><b>Tekanan Udara:</b> ${pressure_mb} mb</p>
+              <p><b>Visibilitas:</b> ${vis_km} km</p>
+            </div>
+          </div>
+        `);
       },
       error: function (error) {
         console.error(error);
